@@ -1,0 +1,27 @@
+@import '@/styles/mixins.scss';
+@import '@/styles/variable.scss';
+.wrapper-header-client {
+    position: -webkit-sticky; /* Safari */
+    position: sticky; /* Standard */
+    top: 0px;
+    z-index: 99;
+    .wrapper-header-bottom {
+        position: -webkit-sticky; /* Safari */
+        position: sticky; /* Standard */
+        top: 0;
+        background-color: #a61024;
+
+        &-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            height: 80px;
+            
+            @media (max-width: $sm-min-width) {
+                height: 80px;
+                justify-content: flex-end;
+              }
+        }
+    }
+}
