@@ -71,6 +71,9 @@ export default function SearchRoom({
               dayjs(dates[0]),
               dayjs(dates[1])
             ] : null}
+            disabledDate={(current) => {
+              return current && current < dayjs().startOf('day');
+            }}
             onChange={(dates) => {
               if (dates) {
                 setDates([dates[0]?.toDate() || null, dates[1]?.toDate() || null])
@@ -82,7 +85,7 @@ export default function SearchRoom({
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Guests
+            Số lượng khách
           </label>
           <Select
             className="w-full"
@@ -96,7 +99,7 @@ export default function SearchRoom({
             onClick={handleSearch}
             className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
           >
-            Search Availability
+           Tìm kiếm
           </button>
         </div>
       </div>

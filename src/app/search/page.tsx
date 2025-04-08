@@ -155,7 +155,7 @@ export default function SearchPage() {
                           const bookingDetails = selectedRooms.map(selectedRoom => {
                             const room = rooms.find(r => r._id === selectedRoom.roomId)
                             return {
-                              roomType: room?.roomType || '',
+                              roomId: room?._id || '',
                               quantity: selectedRoom.quantity,
                               price: room?.price || 0
                             }
