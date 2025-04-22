@@ -42,17 +42,23 @@ export default function HeaderClient() {
                         </div>
                         <nav className="hidden md:flex">
                             <ul className="flex space-x-8">
-                                {['Home', 'Rooms', 'Features', 'Blog', 'About'].map((item) => (
-                                    <li key={item}>
+                                {[
+                                    { label: "Home", path: "/" },
+                                    { label: "Rooms", path: "/rooms" },
+                                    { label: "Search", path: "/search-booking" },
+                                    { label: "Blog", path: "/blog" },
+                                    { label: "About", path: "/about" },
+                                ].map((item) => (
+                                    <li key={item.label}>
                                         <Link 
-                                            href="/" 
+                                            href={item.path} 
                                             className={`transition-colors duration-300 text-lg font-medium ${
                                                 isScrolled 
                                                     ? 'text-gray-600 hover:text-blue-600' 
                                                     : 'text-white hover:text-gray-200'
                                             }`}
                                         >
-                                            {item}
+                                            {item.label}
                                         </Link>
                                     </li>
                                 ))}

@@ -10,6 +10,7 @@ export interface Room {
     status: string;
     bookingDetails: any[];
     roomQuantity: number;
+    availableQuantity:number;
 }
 
 export interface RoomResponse {

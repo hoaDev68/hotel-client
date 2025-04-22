@@ -280,9 +280,7 @@ export default function InformationPage() {
                         // Get the IDs of the created booking details
                         const bookingDetailIds = bookingDetailsResponses.map(response => response.data._id);
 
-                        console.log("bookingDetailIds",bookingDetailIds);
-
-                        // Step 2: Create the main booking with booking detail IDs
+                        // Step 2: Create the main booking
                         const bookingData = {
                           customerName: `${formData.firstName} ${formData.lastName}`,
                           email: formData.email,
@@ -290,15 +288,17 @@ export default function InformationPage() {
                           checkInDate: checkInDate,
                           checkOutDate: checkOutDate,
                           totalAmount: totalPrice,
-                          bookingDetails: bookingDetailIds // Now using the IDs instead of the full objects
+                          paymentMethod: 'GPay',
+                          paymentTime: new Date().toISOString(),
+                          bookingDetails: bookingDetailIds
                         };
-                        console.log("bookingData",bookingData);
+
                         const response = await axios.post('http://localhost:8080/bookings', bookingData);
                         
                         if (response.status === 201 || response.status === 200) {
-                          alert('Đặt phòng thành công!');
-                          // Redirect to booking confirmation or home page
-                          window.location.href = '/';
+                          // Redirect to payment success page with booking ID
+                          const bookingId = response.data._id;
+                          window.location.href = `/payment-success?bookingId=${bookingId}`;
                         } else {
                           throw new Error('Đặt phòng thất bại');
                         }

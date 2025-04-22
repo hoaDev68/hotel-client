@@ -14,7 +14,8 @@ interface SelectedRoom {
 }
 
 export default function SearchPage() {
-  const [rooms, setRooms] = useState<Room[]>([])
+  const [rooms, setRooms] = useState<{ room: Room; availableQuantity: number }[]>([])
+  const [loading, setLoading] = useState(true)
   const [selectedRooms, setSelectedRooms] = useState<SelectedRoom[]>([])
   const searchParams = useSearchParams()
 
@@ -25,13 +26,28 @@ export default function SearchPage() {
       const minCapacity = searchParams.get('minCapacity')
 
       try {
+        setLoading(true)
+        console.log('Fetching rooms with params:', { checkInDate, checkOutDate, minCapacity })
+        
         const response = await fetch(
           `http://localhost:8080/room/client/all?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&minCapacity=${minCapacity}`
         )
         const data = await response.json()
-        setRooms(data.data)
+        console.log('API Response:', data)
+        
+        // The API returns the array directly, not wrapped in a data property
+        if (Array.isArray(data)) {
+          console.log('Setting rooms:', data)
+          setRooms(data)
+        } else {
+          console.log('Invalid data format received from API')
+          setRooms([])
+        }
       } catch (error) {
         console.error('Error fetching rooms:', error)
+        setRooms([])
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -47,7 +63,16 @@ export default function SearchPage() {
         minCapacity={searchParams.get('minCapacity') ? parseInt(searchParams.get('minCapacity')!) : undefined}
       />
       <h1 className="text-3xl font-bold mb-6">Available Rooms</h1>
-      <div className="overflow-x-auto">
+      {loading ? (
+        <div className="text-center py-4">
+          <p>Loading available rooms...</p>
+        </div>
+      ) : rooms.length === 0 ? (
+        <div className="text-center py-4">
+          <p>No rooms available for the selected dates.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
             <tr className="bg-gray-100">
@@ -60,31 +85,31 @@ export default function SearchPage() {
             </tr>
           </thead>
           <tbody>
-            {rooms.map((room, index) => (
-              <tr key={room._id} className="border-b hover:bg-gray-50">
+            {rooms.map((roomData, index) => (
+              <tr key={roomData.room._id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="relative w-20 h-20 mr-4">
                       <Image
-                        src={room.image}
-                        alt={room.roomType}
+                        src={roomData.room.image}
+                        alt={roomData.room.roomType}
                         fill
                         className="object-cover rounded"
                       />
                     </div>
                     <div>
-                      <h3 className="font-semibold">{room.roomType}</h3>
-                      <p className="text-sm text-gray-600">{room.description}</p>
+                      <h3 className="font-semibold">{roomData.room.roomType}</h3>
+                      <p className="text-sm text-gray-600">{roomData.room.description}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center">
                   <div className="flex items-center justify-center">
-                    <span>{room.capacity} guests</span>
+                    <span>{roomData.room.capacity} guests</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <div className="font-semibold">{formatPrice(room.price)}</div>
+                  <div className="font-semibold">{formatPrice(roomData.room.price)}</div>
                 </td>
                 <td className="px-6 py-4 text-center">
                   <ul className="text-sm text-gray-600">
@@ -95,25 +120,25 @@ export default function SearchPage() {
                 <td className="px-6 py-4 text-center">
                   <select
                     className="border rounded px-2 py-1"
-                    value={selectedRooms.find(r => r.roomId === room._id)?.quantity || 0}
+                    value={selectedRooms.find(r => r.roomId === roomData.room._id)?.quantity || 0}
                     onChange={(e) => {
                       const quantity = parseInt(e.target.value)
                       if (quantity === 0) {
-                        setSelectedRooms(prev => prev.filter(r => r.roomId !== room._id))
+                        setSelectedRooms(prev => prev.filter(r => r.roomId !== roomData.room._id))
                       } else {
                         setSelectedRooms(prev => {
-                          const existing = prev.find(r => r.roomId === room._id)
+                          const existing = prev.find(r => r.roomId === roomData.room._id)
                           if (existing) {
                             return prev.map(r => 
-                              r.roomId === room._id ? { ...r, quantity } : r
+                              r.roomId === roomData.room._id ? { ...r, quantity } : r
                             )
                           }
-                          return [...prev, { roomId: room._id, quantity }]
+                          return [...prev, { roomId: roomData.room._id, quantity }]
                         })
                       }
                     }}
                   >
-                    {Array.from({ length: room.roomQuantity + 1 }, (_, i) => (
+                    {Array.from({ length: roomData.availableQuantity + 1 }, (_, i) => (
                       <option key={i} value={i}>
                         {i}
                       </option>
@@ -125,13 +150,13 @@ export default function SearchPage() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         {selectedRooms.map((selectedRoom) => {
-                          const room = rooms.find(r => r._id === selectedRoom.roomId);
-                          if (!room) return null;
+                          const foundRoom = rooms.find(r => r.room._id === selectedRoom.roomId);
+                          if (!foundRoom) return null;
                           return (
                             <div key={selectedRoom.roomId} className="flex justify-between items-center text-sm">
-                              <span>{room.roomType}</span>
+                              <span>{foundRoom.room.roomType}</span>
                               <span>x{selectedRoom.quantity}</span>
-                              <span>{formatPrice(room.price * selectedRoom.quantity)}</span>
+                              <span>{formatPrice(foundRoom.room.price * selectedRoom.quantity)}</span>
                             </div>
                           );
                         })}
@@ -141,7 +166,8 @@ export default function SearchPage() {
                             <span>
                               {formatPrice(
                                 selectedRooms.reduce((total, selectedRoom) => {
-                                  const room = rooms.find(r => r._id === selectedRoom.roomId);
+                                  const roomData = rooms.find(r => r.room._id === selectedRoom.roomId);
+                            const room = roomData?.room;
                                   return total + (room?.price || 0) * selectedRoom.quantity;
                                 }, 0)
                               )}
@@ -153,11 +179,11 @@ export default function SearchPage() {
                         className="w-full cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
                         onClick={() => {
                           const bookingDetails = selectedRooms.map(selectedRoom => {
-                            const room = rooms.find(r => r._id === selectedRoom.roomId)
+                            const roomData = rooms.find(r => r.room._id === selectedRoom.roomId)
                             return {
-                              roomId: room?._id || '',
+                              roomId: roomData?.room._id || '',
                               quantity: selectedRoom.quantity,
-                              price: room?.price || 0
+                              price: roomData?.room.price || 0
                             }
                           })
                           
@@ -182,6 +208,7 @@ export default function SearchPage() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
     </MainClient>
 
