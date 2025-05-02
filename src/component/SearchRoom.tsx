@@ -13,10 +13,10 @@ interface SearchRoomProps {
   minCapacity?: number
 }
 
-export default function SearchRoom({ 
-  checkInDate, 
-  checkOutDate, 
-  minCapacity 
+export default function SearchRoom({
+  checkInDate,
+  checkOutDate,
+  minCapacity
 }: SearchRoomProps = {}) {
   const router = useRouter()
   const [dates, setDates] = useState<any>(null)
@@ -90,16 +90,24 @@ export default function SearchRoom({
           <Select
             className="w-full"
             value={guests}
-            onChange={setGuests}
+            onChange={(value) => {
+              setGuests(value)
+              if (dates && dates[0] && dates[1]) {
+                const checkIn = dayjs(dates[0]).format('YYYY-MM-DD')
+                const checkOut = dayjs(dates[1]).format('YYYY-MM-DD')
+                router.push(`/search?checkInDate=${checkIn}&checkOutDate=${checkOut}&minCapacity=${value}`)
+              }
+            }}
             options={guestOptions}
           />
+
         </div>
         <div>
           <button
             onClick={handleSearch}
             className="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
           >
-           Tìm kiếm
+            Tìm kiếm
           </button>
         </div>
       </div>

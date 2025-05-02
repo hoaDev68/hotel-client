@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Room } from "@/store/rooms/rooms.type";
 import { instanceAxios } from "@/config/axios";
 import Link from "next/link";
+import ChatBox from "@/component/ChatBox/ChatBox";
 
 export default function Home() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -27,9 +28,30 @@ export default function Home() {
   }, []);
 
 
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
   return (
     <MainClient>
       <div className="container mx-auto px-4 py-16">
+        {/* Chat Button */}
+        <button
+          onClick={() => setIsChatOpen(true)}
+          className="z-50 fixed bottom-4 right-4 bg-blue-600 text-white rounded-full p-3 shadow-lg hover:bg-blue-700 transition-all duration-300 hover:scale-110"
+        >
+          <svg className="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+        </button>
+
+        {isChatOpen && (
+          <div className="fixed inset-0 z-50">
+            <div className="flex items-end justify-end min-h-screen p-4">
+              <div className="w-full max-w-md">
+                <ChatBox onClose={() => setIsChatOpen(false)} />
+              </div>
+            </div>
+          </div>
+        )}
         {/* Hotel Master Rooms Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Hotel Master Rooms</h1>
