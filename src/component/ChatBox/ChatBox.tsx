@@ -10,6 +10,7 @@ export default function ChatBox({ onClose }: ChatBoxProps) {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'bot'; content: string }[]>([]);
 
+  //hàm gửi tin nhắn và bot tự trả lời
   const sendMessage = async () => {
     if (!message.trim()) return;
 
